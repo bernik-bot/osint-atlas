@@ -6,7 +6,7 @@ on:
     - cron: "0 6 1 * *"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   links:
@@ -17,4 +17,15 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check tool URLs
-        run: python scripts/check_links.py
+        run: python scripts/check_links.py --write data/link-status.json
+      - name: Commit updated status
+        run: |
+          if git diff --quiet -- data/link-status.json; then
+            echo "No change in link status."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/link-status.json
+          git commit -m "Update link status"
+          git push

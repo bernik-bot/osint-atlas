@@ -4,7 +4,7 @@
 ![Static site](https://img.shields.io/badge/static-no%20build%20step-black)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**A curated, searchable catalogue of OSINT tools, plus a pivot board that turns one selector into dozens of ready-made lookups.** It is one static page with no backend, no tracking and no API keys.
+**579 OSINT tools in 35 categories, searchable and filterable, plus a pivot board that turns one selector into dozens of ready-made lookups.** It is one static page with no backend, no tracking and no API keys.
 
 **[Open OSINT Atlas](https://skriptkiddy98x.github.io/osint-atlas/)**
 
@@ -12,22 +12,32 @@
 
 ## Why
 
-Long "awesome" lists are great for discovering tools and slow to use in the middle of an investigation. OSINT Atlas covers both needs:
+Big "awesome" lists such as [awesome-osint](https://github.com/jivoi/awesome-osint) are great for discovering tools and slow to use in the middle of an investigation. OSINT Atlas covers the same ground in a form you can work with:
+
+| | Markdown awesome list | OSINT Atlas |
+|---|---|---|
+| Find a tool | Ctrl+F on one long page | Instant search over names, descriptions, tags and your own notes |
+| Narrow it down | Read every entry | Filter by category, free, no sign-up, no API key, open source, tool type |
+| Dead links | Found by readers, one at a time | Every URL tested monthly by a GitHub Action; unreachable tools are flagged in the UI |
+| Your shortlist | Bookmarks elsewhere | Star tools and attach notes, kept in your browser, exportable as JSON |
+| From selector to lookups | Copy, open site, paste, repeat | Paste once: the pivot board builds the lookup URLs for you |
+| Share a view | Link to a heading | The URL keeps your filters, e.g. `#catalogue?cat=companies&free=1` |
+| Data format | Prose in Markdown | `data/tools.json`, schema-checked in CI, easy to reuse |
 
 - **Pivot**: paste a username, email, domain, IP, phone number, URL, image URL, crypto wallet, file hash or a name. The type is detected for you, the value is normalised (`00421 905/123-456` becomes `+421905123456`, `https://www.Example.com/x` becomes `example.com`), and you get the lookups an analyst would open next, grouped by purpose.
-- **Catalogue**: 200+ hand-picked tools in 19 categories, each with a one-line description written for this project. Filter by free, no sign-up, open source or tool type, and share the filtered view as a link.
+- **Catalogue**: 579 tools in 35 categories, from search operators and usernames to satellite imagery, sanctions, crypto, the dark web and OPSEC. Every one-line description was written for this project.
 
 ## Pivot board
 
 | Selector | Example | What you get |
 |---|---|---|
-| Username | `torvalds` | WhatsMyName, 30+ direct profile URLs (social, code, gaming), exact-match searches |
+| Username | `torvalds` | WhatsMyName, 40 direct profile URLs (social, code, gaming), exact-match searches |
 | Email | `someone@example.com` | Have I Been Pwned, Gravatar (SHA-256 hashed in the browser), Epieos, Hunter, GitHub commits by author, PGP keys |
 | Domain | `example.com` | RDAP/WHOIS, Certificate Transparency subdomains, DNS history, tech stack, reputation, Wayback, Google dorks |
-| IP | `1.1.1.1`, IPv6 | ASN and owner, Shodan, AbuseIPDB, GreyNoise, VirusTotal, reverse IP |
+| IP | `1.1.1.1`, IPv6 | ASN and owner, Shodan, LeakIX, AbuseIPDB, GreyNoise, VirusTotal, Tor relay history, reverse IP |
 | Phone | `+421 905 123 456` | Normalised to E.164, Epieos, Sync.ME, libphonenumber, WhatsApp/Telegram, search engines |
 | URL / image URL | `https://…/photo.jpg` | Google Lens, Bing, Yandex, TinEye, archives, Safe Browsing, URLhaus |
-| Name | `Jane Doe` | Exact-match and LinkedIn dorks, OpenSanctions, OpenCorporates officers, ICIJ Offshore Leaks |
+| Name | `Jane Doe` | Exact-match and LinkedIn dorks, news, OpenSanctions, OpenCorporates officers, ICIJ Offshore Leaks, court and research records |
 | Wallet | `bc1…`, `0x…`, `T…` | Chain-specific explorers (BTC, ETH, TRON), wallet attribution, Chainabuse reports |
 | File hash | MD5 / SHA-1 / SHA-256 | VirusTotal, MalwareBazaar, Hybrid Analysis, OTX, ThreatFox |
 
@@ -37,16 +47,21 @@ Each result also suggests **related pivots**: an email offers its domain and the
 
 ## Catalogue
 
-![Catalogue filtered to free tools](docs/catalogue.png)
+![Catalogue with the category sidebar, starred tools and a personal note](docs/catalogue.png)
 
-Search matches names, descriptions, categories, regions and tags. Category chips show live counts for the current filters. The view state is kept in the address bar (`#catalogue?cat=domain&free=1&type=cli`), so a filtered list can be bookmarked or sent to a colleague. Press <kbd>/</kbd> to jump to the search box and <kbd>Esc</kbd> to clear it.
+- **Search** matches names, descriptions, categories, regions, tags and your own notes. Press <kbd>/</kbd> to jump to the search box and <kbd>Esc</kbd> to clear it.
+- **Filters**: Free, No sign-up, No API key, Open source, Starred, and tool type (web, CLI, extension, app, API, dataset, guide). Category counts update live.
+- **Labels** on every card: pricing, type, open source, account needed, API key needed, and a region code when a tool mainly covers one country.
+- **Stars and notes**: star the tools you rely on and add notes such as "search `%.example.com` for subdomains". They stay in `localStorage` and can be exported to and imported from a JSON file.
+- **Link health**: [`scripts/check_links.py`](scripts/check_links.py) tests every URL. A monthly workflow commits the result to `data/link-status.json`, and tools that stopped responding get an *Unreachable* label. Sites that block scripts count as "blocked", not dead.
+- **Shareable views**: filters live in the address bar (`#catalogue?cat=domain&free=1&type=cli`).
 
-The list leans towards tools that are maintained, free to start with and useful in Europe, including Slovak and Czech company registers and EU sources such as Copernicus, TED and the Transparency Register.
+Coverage leans towards tools that are maintained and useful in Europe. Next to the usual global services it lists Slovak, Czech and other EU sources: ORSR, RPVS, FinStat, ARES, Hlídač státu, national web archives, Demagog, Copernicus, TED, EUIPO and the EU Transparency Register.
 
 ## Passive and private by design
 
 - **No third-party requests.** The page loads only its own HTML, CSS, JS and JSON. A strict Content-Security-Policy (`default-src 'self'`) enforces it, so there are no fonts, analytics or favicons fetched from elsewhere.
-- **Selectors stay in the tab.** They are never written to the URL, history, `localStorage` or cookies. Only catalogue filters go into the URL.
+- **Selectors stay in the tab.** They are never written to the URL, history, `localStorage` or cookies. Only catalogue filters go into the URL, and only your stars and notes go into `localStorage`.
 - **No referrer.** Every outbound link uses `rel="noopener noreferrer"`, so the services you open cannot see where you came from.
 - **No scraping, no keys.** The app only builds links. Nothing is sent anywhere until you click one, and then only to that service.
 - **No `innerHTML`.** The DOM is built with `createElement`/`textContent`, so data files cannot inject markup.
@@ -72,13 +87,15 @@ index.html               page shell, CSP, three views (Pivot, Catalogue, About)
 assets/style.css         black theme, responsive down to 320 px
 assets/js/selectors.js   type detection, normalisation, URL template expansion (no DOM, unit-tested)
 assets/js/pivot.js       pivot board UI
-assets/js/catalogue.js   catalogue search, filters and URL state
+assets/js/catalogue.js   catalogue search, filters, stars, notes and URL state
+assets/js/storage.js     localStorage, export and import of stars and notes
 assets/js/main.js        data loading and routing
 data/tools.json          the catalogue: categories and tools
 data/pivots.json         selector types and lookup URL templates
+data/link-status.json    result of the last link check (written by CI)
 scripts/validate.py      schema and consistency checks for both data files
-scripts/check_links.py   reports dead tool links
-tests/                   Node test runner tests for selectors.js
+scripts/check_links.py   tests every tool URL; --write updates link-status.json
+tests/                   Node test runner tests (detection, URL building, ids, import)
 ```
 
 ## Add a tool or a pivot
@@ -97,6 +114,8 @@ A tool is one JSON object in `data/tools.json`:
   "openSource": true
 }
 ```
+
+Optional fields: `"apiKey": true` when the tool is useless without an API key, `"region": "SK"` for country-specific sources, and `"tags": ["twitter"]` for extra search words.
 
 A pivot is a URL template in `data/pivots.json`. `{q}` is the normalised selector, and some types add extra placeholders such as `{sha256}` for email, `{digits}` and `{e164}` for phones, `{host}` for URLs or `{algo}` for hashes:
 
@@ -120,7 +139,7 @@ Public information is not a free-for-all. Have a lawful purpose, collect only wh
 
 ## Credits
 
-Inspired by [awesome-osint](https://github.com/jivoi/awesome-osint) by jivoi and contributors, the much larger community list. OSINT Atlas is an independent selection: no list entries or descriptions were copied, and every description was written for this project.
+Inspired by [awesome-osint](https://github.com/jivoi/awesome-osint) by jivoi and contributors (CC BY-SA 4.0). OSINT Atlas covers a similar breadth of topics but is an independent selection: no list text or descriptions were copied, and every description was written for this project.
 
 ## License
 

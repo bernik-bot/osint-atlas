@@ -1,0 +1,268 @@
+{
+  "checked": "2026-10-29",
+  "total": 579,
+  "counts": {
+    "blocked": 57,
+    "broken": 2,
+    "ok": 515,
+    "warn": 5
+  },
+  "issues": {
+    "https://2gis.ru": {
+      "state": "broken",
+      "detail": "TimeoutError"
+    },
+    "https://adsb.lol": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://archive.4plebs.org": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://aviation-safety.net": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://blockchair.com": {
+      "state": "blocked",
+      "detail": "401"
+    },
+    "https://breachdirectory.org": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://bscscan.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://check.spamhaus.org": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://chroniclingamerica.loc.gov": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://context.reverso.net": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://crt.sh": {
+      "state": "warn",
+      "detail": "502"
+    },
+    "https://epieos.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://euvsdisinfo.eu": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://factcheck.afp.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://finstat.sk": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://freecarrierlookup.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://gijn.org/resources/": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://id-ransomware.malwarehunterteam.com": {
+      "state": "warn",
+      "detail": "521"
+    },
+    "https://intel.arkm.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://liveuamap.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://namemc.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://perma.cc": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://psnprofiles.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://search.brave.com": {
+      "state": "blocked",
+      "detail": "429"
+    },
+    "https://securitytrails.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://steamdb.info": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://telemetr.io": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://tgstat.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://thatsthem.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://transparency.meta.com/researchtools/meta-content-library": {
+      "state": "warn",
+      "detail": "400"
+    },
+    "https://tronscan.org": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://voterrecords.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://whatsmyname.app": {
+      "state": "warn",
+      "detail": "464"
+    },
+    "https://worldwide.espacenet.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.192.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.abuseipdb.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.ancestry.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.dart-europe.org": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.facebook.com/ads/library": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.fastpeoplesearch.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.glassdoor.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.indeed.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.jetphotos.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.joesandbox.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.kompass.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.kununu.com": {
+      "state": "blocked",
+      "detail": "405"
+    },
+    "https://www.livejournal.com": {
+      "state": "broken",
+      "detail": "TimeoutError"
+    },
+    "https://www.loc.gov/web-archives/": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.mapillary.com": {
+      "state": "warn",
+      "detail": "400"
+    },
+    "https://www.myshiptracking.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.npmjs.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.ohchr.org/en/publications/policy-and-methodological-publications/berkeley-protocol-digital-open-source": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.pappers.fr": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.pressreader.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.quora.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.researchgate.net": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.sec.gov/edgar/search/": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.shipspotting.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.tellows.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.tracelabs.org": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.truepeoplesearch.com": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://www.yahoo.co.jp": {
+      "state": "blocked",
+      "detail": "403"
+    },
+    "https://xcancel.com": {
+      "state": "blocked",
+      "detail": "451"
+    }
+  }
+}

@@ -39,8 +39,12 @@ async function start() {
     return;
   }
 
+  // Written by the monthly link-check workflow; the page works without it.
+  const linkStatus = await loadJson("data/link-status.json").catch(() => null);
+
   const pivot = initPivot(pivots);
   const catalogue = initCatalogue(tools, {
+    linkStatus,
     onStateChange: (query) => history.replaceState(null, "", `#catalogue${query ? `?${query}` : ""}`),
   });
   document.getElementById("tool-total").textContent = catalogue.total;

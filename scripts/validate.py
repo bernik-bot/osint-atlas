@@ -22,13 +22,22 @@ PIVOTS = ROOT / "data" / "pivots.json"
 
 PRICING = {"free", "freemium", "paid"}
 TYPES = {"web", "cli", "extension", "app", "api", "dataset", "guide"}
-TOOL_KEYS = {"name", "url", "category", "description", "pricing", "type", "account", "openSource", "region"}
-REQUIRED_TOOL_KEYS = TOOL_KEYS - {"region"}
+TOOL_KEYS = {"name", "url", "category", "description", "pricing", "type", "account", "openSource", "apiKey", "region", "tags"}
+REQUIRED_TOOL_KEYS = TOOL_KEYS - {"apiKey", "region", "tags"}
 MAX_DESCRIPTION = 140
 
 PIVOT_KEYS = {"type", "subtype", "group", "name", "url", "note"}
 SUBTYPES = {"crypto": {"btc", "eth", "tron"}, "hash": {"md5", "sha1", "sha256"}}
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
+
+
+def slug(name: str) -> str:
+    """Same id the web app uses for stars and notes (see toolId in catalogue.js)."""
+    import unicodedata
+
+    folded = unicodedata.normalize("NFD", name)
+    folded = "".join(ch for ch in folded if not unicodedata.combining(ch)).lower()
+    return re.sub(r"[^a-z0-9]+", "-", folded).strip("-")
 
 
 def check_url(url: str, where: str, errors: list[str], allow_http: bool = False) -> None:
@@ -51,6 +60,7 @@ def validate_tools(data: dict, errors: list[str]) -> int:
                 errors.append(f"categories: {cat!r} is missing {key!r}")
 
     seen_names: dict[str, str] = {}
+    seen_ids: dict[str, str] = {}
     seen_urls: dict[str, str] = {}
     used_categories: set[str] = set()
     for i, tool in enumerate(data.get("tools", [])):
@@ -73,16 +83,23 @@ def validate_tools(data: dict, errors: list[str]) -> int:
             errors.append(f"{where}: pricing must be one of {sorted(PRICING)}")
         if tool.get("type") not in TYPES:
             errors.append(f"{where}: type must be one of {sorted(TYPES)}")
-        for flag in ("account", "openSource"):
+        for flag in ("account", "openSource", "apiKey"):
             if flag in tool and not isinstance(tool[flag], bool):
                 errors.append(f"{where}: {flag} must be true or false")
         if "region" in tool and not re.fullmatch(r"[A-Z]{2}", str(tool["region"])):
             errors.append(f"{where}: region must be a two-letter code such as EU, US or SK")
+        tags = tool.get("tags", [])
+        if not isinstance(tags, list) or not all(isinstance(t, str) and re.fullmatch(r"[a-z0-9-]+", t) for t in tags):
+            errors.append(f"{where}: tags must be a list of lower-case words")
         if not desc or len(desc) > MAX_DESCRIPTION:
             errors.append(f"{where}: description must be 1-{MAX_DESCRIPTION} characters (has {len(desc)})")
         elif not desc.endswith("."):
             errors.append(f"{where}: description should end with a full stop")
 
+        tool_id = slug(name)
+        if tool_id in seen_ids:
+            errors.append(f"{where}: name gives the same id {tool_id!r} as {seen_ids[tool_id]} (stars and notes would clash)")
+        seen_ids[tool_id] = where
         key = name.lower()
         if key in seen_names:
             errors.append(f"{where}: duplicate name, also {seen_names[key]}")

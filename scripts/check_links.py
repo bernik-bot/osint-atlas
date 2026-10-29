@@ -3,6 +3,10 @@
 
     python scripts/check_links.py            # all tools
     python scripts/check_links.py --only crypto,geo
+    python scripts/check_links.py --write data/link-status.json
+
+--write saves the result for the web app, which flags unreachable tools,
+and always exits 0 so the monthly workflow can commit the file.
 
 Many sites block scripts (HTTP 401/403/429 or a Cloudflare challenge), so
 those count as "blocked", not broken. Only DNS failures, timeouts and
@@ -14,10 +18,12 @@ from __future__ import annotations
 import argparse
 import json
 import socket
+import ssl
 import sys
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -39,6 +45,9 @@ def probe(url: str, timeout: float) -> tuple[str, str]:
         return "warn", str(exc.code)
     except (urllib.error.URLError, socket.timeout, TimeoutError, ConnectionError) as exc:
         reason = getattr(exc, "reason", exc)
+        if isinstance(reason, ssl.SSLCertVerificationError):
+            # Usually a server that omits an intermediate certificate: browsers cope, Python does not.
+            return "warn", "TLS chain"
         return "broken", type(reason).__name__ if not isinstance(reason, str) else reason
 
 
@@ -47,6 +56,7 @@ def main() -> int:
     parser.add_argument("--only", help="comma-separated category ids")
     parser.add_argument("--timeout", type=float, default=20)
     parser.add_argument("--workers", type=int, default=12)
+    parser.add_argument("--write", metavar="PATH", help="save non-OK results as JSON for the web app")
     args = parser.parse_args()
 
     data = json.loads((ROOT / "data" / "tools.json").read_text(encoding="utf-8"))
@@ -64,6 +74,21 @@ def main() -> int:
 
     summary = ", ".join(f"{n} {state}" for state, n in sorted(counts.items()))
     print(f"\nChecked {len(results)} URLs: {summary}")
+
+    if args.write:
+        status = {
+            "checked": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "total": len(results),
+            "counts": dict(sorted(counts.items())),
+            "issues": {
+                tool["url"]: {"state": state, "detail": detail}
+                for tool, state, detail in sorted(results, key=lambda r: r[0]["url"])
+                if state != "ok"
+            },
+        }
+        Path(args.write).write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+        print(f"Wrote {args.write}")
+        return 0
     return 1 if counts.get("broken") else 0
 
 

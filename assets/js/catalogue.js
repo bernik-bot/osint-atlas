@@ -1,4 +1,5 @@
 import { h, extLink, displayUrl, foldText } from "./dom.js";
+import { loadPrefs, savePrefs, exportPrefs, importPrefs } from "./storage.js";
 
 const TYPE_LABELS = {
   web: "Web",
@@ -10,17 +11,35 @@ const TYPE_LABELS = {
   guide: "Guide",
 };
 const PRICING_LABELS = { free: "Free", freemium: "Freemium", paid: "Paid" };
+const FLAGS = ["free", "noacct", "nokey", "oss", "starred"];
+
+/** Stable id for stars and notes. scripts/validate.py checks these are unique. */
+export function toolId(name) {
+  return foldText(name).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function formatDate(iso) {
+  const date = new Date(`${iso}T00:00:00Z`);
+  return Number.isNaN(date.getTime())
+    ? iso
+    : date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+}
 
 /**
  * Catalogue view. Filter state lives in the URL hash (#catalogue?q=…&cat=…)
- * so a filtered view can be bookmarked or shared.
+ * so a filtered view can be bookmarked or shared. Stars and notes stay local.
  */
-export function initCatalogue(data, { onStateChange }) {
+export function initCatalogue(data, { onStateChange, linkStatus }) {
   const categories = data.categories;
   const catById = Object.fromEntries(categories.map((c) => [c.id, c]));
+  const issues = linkStatus?.issues || {};
+  const checkedOn = linkStatus?.checked ? formatDate(linkStatus.checked) : null;
+
   const tools = data.tools.map((tool, order) => ({
     ...tool,
+    id: toolId(tool.name),
     order,
+    unreachable: issues[tool.url]?.state === "broken",
     haystack: foldText(
       [
         tool.name,
@@ -30,36 +49,41 @@ export function initCatalogue(data, { onStateChange }) {
         tool.type,
         tool.pricing,
         tool.region,
+        ...(tool.tags || []),
         tool.openSource ? "open source oss" : "",
         tool.account ? "account registration" : "no account",
+        tool.apiKey ? "api key" : "",
         displayUrl(tool.url),
       ].join(" ")
     ),
     nameFolded: foldText(tool.name),
   }));
 
-  const search = document.getElementById("tool-search");
-  const free = document.getElementById("f-free");
-  const noAcct = document.getElementById("f-noacct");
-  const oss = document.getElementById("f-oss");
-  const type = document.getElementById("f-type");
-  const chipBox = document.getElementById("category-chips");
-  const list = document.getElementById("tool-list");
-  const count = document.getElementById("result-count");
+  const prefs = loadPrefs();
+  const el = (id) => document.getElementById(id);
+  const search = el("tool-search");
+  const toggles = { free: el("f-free"), noacct: el("f-noacct"), nokey: el("f-nokey"), oss: el("f-oss"), starred: el("f-starred") };
+  const type = el("f-type");
+  const nav = el("category-chips");
+  const list = el("tool-list");
+  const count = el("result-count");
+  const myList = el("mylist-count");
 
   let category = "";
 
   const chipEls = new Map();
   const makeChip = (id, label) => {
-    const chip = h("button", { type: "button", class: "chip", "aria-pressed": "false" }, label, h("span", { class: "n" }));
+    const chip = h("button", { type: "button", class: "chip", "aria-pressed": "false" }, h("span", { class: "label" }, label), h("span", { class: "n" }));
     chip.addEventListener("click", () => {
       category = category === id ? "" : id;
       render(true);
+      const top = list.getBoundingClientRect().top;
+      if (top < 0) window.scrollBy({ top: top - 16 });
     });
     chipEls.set(id, chip);
-    chipBox.append(chip);
+    nav.append(chip);
   };
-  makeChip("", "All");
+  makeChip("", "All tools");
   categories.forEach((c) => makeChip(c.id, c.name));
 
   let typingTimer;
@@ -73,35 +97,62 @@ export function initCatalogue(data, { onStateChange }) {
       render(true);
     }
   });
-  [free, noAcct, oss, type].forEach((el) => el.addEventListener("change", () => render(true)));
-  document.getElementById("f-reset").addEventListener("click", reset);
+  [...Object.values(toggles), type].forEach((input) => input.addEventListener("change", () => render(true)));
+  el("f-reset").addEventListener("click", reset);
+
+  el("prefs-export").addEventListener("click", () => exportPrefs(prefs));
+  el("prefs-import").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const added = importPrefs(prefs, await file.text());
+      savePrefs(prefs);
+      render(false);
+      flash(`Imported ${added} item${added === 1 ? "" : "s"}.`);
+    } catch (error) {
+      flash(`Import failed: ${error.message}`);
+    }
+  });
+
+  function flash(message) {
+    myList.textContent = message;
+    setTimeout(updateMyList, 2500);
+  }
+
+  function updateMyList() {
+    const notes = Object.keys(prefs.notes).length;
+    myList.textContent = `★ ${prefs.starred.size} starred · ${notes} note${notes === 1 ? "" : "s"}`;
+  }
+
+  function persist() {
+    if (!savePrefs(prefs)) flash("This browser blocks storage, so stars and notes will not be kept.");
+    else updateMyList();
+  }
 
   function reset() {
     search.value = "";
-    free.checked = noAcct.checked = oss.checked = false;
+    Object.values(toggles).forEach((t) => (t.checked = false));
     type.value = "";
     category = "";
     render(true);
   }
 
   function readFilters() {
-    return {
-      q: search.value.trim(),
-      cat: category,
-      free: free.checked,
-      noacct: noAcct.checked,
-      oss: oss.checked,
-      type: type.value,
-    };
+    const f = { q: search.value.trim(), cat: category, type: type.value };
+    for (const flag of FLAGS) f[flag] = toggles[flag].checked;
+    return f;
   }
 
   function matches(tool, f, tokens, ignoreCategory = false) {
     if (!ignoreCategory && f.cat && tool.category !== f.cat) return false;
     if (f.free && tool.pricing !== "free") return false;
     if (f.noacct && tool.account) return false;
+    if (f.nokey && tool.apiKey) return false;
     if (f.oss && !tool.openSource) return false;
+    if (f.starred && !prefs.starred.has(tool.id)) return false;
     if (f.type && tool.type !== f.type) return false;
-    return tokens.every((t) => tool.haystack.includes(t));
+    return tokens.every((t) => tool.haystack.includes(t) || (prefs.notes[tool.id] && foldText(prefs.notes[tool.id]).includes(t)));
   }
 
   function score(tool, tokens) {
@@ -117,7 +168,7 @@ export function initCatalogue(data, { onStateChange }) {
     const f = readFilters();
     const tokens = foldText(f.q).split(/\s+/).filter(Boolean);
 
-    // Chip counts respect every filter except the category itself.
+    // Category counts respect every filter except the category itself.
     const perCategory = {};
     let totalForChips = 0;
     for (const tool of tools) {
@@ -129,20 +180,26 @@ export function initCatalogue(data, { onStateChange }) {
       const n = id ? perCategory[id] || 0 : totalForChips;
       chip.querySelector(".n").textContent = n;
       chip.setAttribute("aria-pressed", String(id === f.cat));
-      chip.hidden = n === 0 && id !== f.cat;
+      chip.hidden = n === 0 && id !== f.cat && id !== "";
+    }
+    // In the swipeable row on phones, bring the selected category into view.
+    const active = chipEls.get(f.cat);
+    if (nav.scrollWidth > nav.clientWidth && active) {
+      nav.scrollLeft = active.getBoundingClientRect().left - nav.getBoundingClientRect().left + nav.scrollLeft - 16;
     }
 
     const shown = tools
       .filter((tool) => matches(tool, f, tokens))
       .sort((a, b) => score(b, tokens) - score(a, tokens) || a.order - b.order);
 
-    count.textContent =
+    const what =
       shown.length === tools.length ? `${tools.length} tools in ${categories.length} categories` : `${shown.length} of ${tools.length} tools`;
+    count.textContent = checkedOn ? `${what} · links checked ${checkedOn}` : what;
+    updateMyList();
 
     if (!shown.length) {
-      list.replaceChildren(
-        h("p", { class: "empty" }, "No tools match these filters.", h("button", { type: "button", class: "ghost small-btn", onclick: reset }, "Clear filters"))
-      );
+      const hint = f.starred && prefs.starred.size === 0 ? "You have not starred any tools yet." : "No tools match these filters.";
+      list.replaceChildren(h("p", { class: "empty" }, hint, h("button", { type: "button", class: "small-btn", onclick: reset }, "Clear filters")));
     } else {
       list.replaceChildren(...categories.map((c) => renderSection(c, shown.filter((t) => t.category === c.id))).filter(Boolean));
     }
@@ -161,11 +218,38 @@ export function initCatalogue(data, { onStateChange }) {
   }
 
   function renderCard(tool) {
-    return h(
-      "article",
-      { class: "card" },
-      h("h3", {}, extLink(tool.url, {}, tool.name, h("span", { class: "arrow", "aria-hidden": "true" }, "↗"))),
+    const card = h("article", { class: "card" });
+    const fill = () => card.replaceChildren(...cardContent(tool, card, fill).filter(Boolean));
+    fill();
+    return card;
+  }
+
+  function cardContent(tool, card, refresh) {
+    const starred = prefs.starred.has(tool.id);
+    const note = prefs.notes[tool.id] || "";
+    card.classList.toggle("starred", starred);
+    card.classList.toggle("unreachable", tool.unreachable);
+
+    const star = h(
+      "button",
+      { type: "button", class: "star", "aria-pressed": String(starred), "aria-label": `${starred ? "Unstar" : "Star"} ${tool.name}`, title: starred ? "Unstar" : "Star" },
+      starred ? "★" : "☆"
+    );
+    star.addEventListener("click", () => {
+      if (prefs.starred.has(tool.id)) prefs.starred.delete(tool.id);
+      else prefs.starred.add(tool.id);
+      persist();
+      if (toggles.starred.checked) render(false);
+      else refresh();
+    });
+
+    const noteBtn = h("button", { type: "button", class: "note-btn", "aria-expanded": "false" }, note ? "Edit note" : "Add note");
+    noteBtn.addEventListener("click", () => openEditor(tool, card, noteBtn, refresh));
+
+    return [
+      h("div", { class: "card-head" }, h("h3", {}, extLink(tool.url, {}, tool.name, h("span", { class: "arrow", "aria-hidden": "true" }, "↗"))), star),
       h("p", {}, tool.description),
+      note ? h("p", { class: "note-text" }, note) : null,
       h(
         "div",
         { class: "meta" },
@@ -173,19 +257,49 @@ export function initCatalogue(data, { onStateChange }) {
         h("span", { class: `pill ${tool.pricing === "free" ? "free" : tool.pricing === "paid" ? "paid" : ""}` }, PRICING_LABELS[tool.pricing]),
         h("span", { class: "pill" }, TYPE_LABELS[tool.type]),
         tool.openSource ? h("span", { class: "pill oss" }, "Open source") : null,
-        tool.account ? h("span", { class: "pill acct" }, "Account") : null,
-        tool.region ? h("span", { class: "pill", title: "Mainly useful for this region" }, tool.region) : null
-      )
-    );
+        tool.account ? h("span", { class: "pill" }, "Account") : null,
+        tool.apiKey ? h("span", { class: "pill" }, "API key") : null,
+        tool.region ? h("span", { class: "pill", title: "Mainly useful for this region" }, tool.region) : null,
+        tool.unreachable ? h("span", { class: "pill bad", title: `No response at the last link check (${checkedOn})` }, "Unreachable") : null,
+        noteBtn
+      ),
+    ];
+  }
+
+  function openEditor(tool, card, button, refresh) {
+    if (card.querySelector(".note-input")) return;
+    button.setAttribute("aria-expanded", "true");
+    const input = h("textarea", { class: "note-input", rows: "3", maxlength: "4000", placeholder: "Your note, saved in this browser only", "aria-label": `Note for ${tool.name}` }, prefs.notes[tool.id] || "");
+    let timer;
+    const save = () => {
+      const text = input.value.trim();
+      if (text) prefs.notes[tool.id] = text;
+      else delete prefs.notes[tool.id];
+      persist();
+    };
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(save, 300);
+    });
+    const done = h("button", { type: "button", class: "small-btn" }, "Done");
+    const close = () => {
+      clearTimeout(timer);
+      save();
+      refresh();
+    };
+    done.addEventListener("click", close);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" || (event.key === "Enter" && (event.ctrlKey || event.metaKey))) close();
+    });
+    card.append(h("div", { class: "note-editor" }, input, done));
+    input.focus();
   }
 
   function toQuery(f) {
     const params = new URLSearchParams();
     if (f.q) params.set("q", f.q);
     if (f.cat) params.set("cat", f.cat);
-    if (f.free) params.set("free", "1");
-    if (f.noacct) params.set("noacct", "1");
-    if (f.oss) params.set("oss", "1");
+    for (const flag of FLAGS) if (f[flag]) params.set(flag, "1");
     if (f.type) params.set("type", f.type);
     return params.toString();
   }
@@ -195,9 +309,7 @@ export function initCatalogue(data, { onStateChange }) {
     const params = new URLSearchParams(query);
     search.value = params.get("q") || "";
     category = catById[params.get("cat")] ? params.get("cat") : "";
-    free.checked = params.get("free") === "1";
-    noAcct.checked = params.get("noacct") === "1";
-    oss.checked = params.get("oss") === "1";
+    for (const flag of FLAGS) toggles[flag].checked = params.get(flag) === "1";
     type.value = TYPE_LABELS[params.get("type")] ? params.get("type") : "";
     render(false);
   }

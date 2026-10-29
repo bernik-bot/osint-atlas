@@ -19,6 +19,8 @@ Not accepted: tools whose main purpose is stalking, doxxing or bypassing access 
 - **pricing**: `free`, `freemium` (useful free tier, paid extras) or `paid`.
 - **type**: `web`, `cli`, `extension`, `app` (desktop or self-hosted), `api`, `dataset` or `guide`.
 - **account**: `true` if you need to sign up before it is useful.
+- **apiKey** (optional): `true` if the tool does nothing useful without an API key.
+- **tags** (optional): extra lower-case search words, e.g. `["twitter"]` for an X tool.
 - **region** (optional): a two-letter code (`EU`, `US`, `SK`, `CZ`, …) when the tool mainly covers one country or region.
 
 ## Pivots
