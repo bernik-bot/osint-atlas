@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#000000">
+  <title>OSINT Atlas</title>
+  <meta name="description" content="A curated, searchable catalogue of OSINT tools and a passive pivot board that turns one username, email, domain, IP, phone or image URL into ready-made lookups.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script type="module" src="assets/js/main.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="12.5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="16" cy="16" r="4" fill="currentColor"/>
+          <path d="M16 1v7M16 24v7M1 16h7M24 16h7" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <div>
+          <h1>OSINT Atlas</h1>
+          <p class="tagline">Open-source intelligence tools, curated. Turn one selector into dozens of lookups.</p>
+        </div>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="Sections">
+        <a href="#pivot" role="tab" id="tab-pivot" aria-controls="view-pivot">Pivot</a>
+        <a href="#catalogue" role="tab" id="tab-catalogue" aria-controls="view-catalogue">Catalogue <span class="count" id="tool-total"></span></a>
+        <a href="#about" role="tab" id="tab-about" aria-controls="view-about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <p class="load-error" id="load-error" hidden></p>
+
+    <section id="view-pivot" class="view" role="tabpanel" aria-labelledby="tab-pivot" hidden>
+      <form class="pivot-form" id="pivot-form" autocomplete="off">
+        <label class="sr-only" for="pivot-input">Selector</label>
+        <div class="pivot-input-row">
+          <input id="pivot-input" class="big-input" type="text" spellcheck="false" autocapitalize="off"
+                 placeholder="Username, email, domain, IP, phone, URL, image URL, wallet or hash">
+          <button type="button" class="ghost" id="pivot-clear" aria-label="Clear input">Clear</button>
+        </div>
+        <div class="chips" id="pivot-types" role="radiogroup" aria-label="Selector type"></div>
+      </form>
+      <p class="privacy-note">Nothing leaves this page until you click a link. The service you open then sees your query, so think about OPSEC first.</p>
+      <div id="pivot-output" aria-live="polite"></div>
+    </section>
+
+    <section id="view-catalogue" class="view" role="tabpanel" aria-labelledby="tab-catalogue" hidden>
+      <div class="filters">
+        <label class="sr-only" for="tool-search">Search tools</label>
+        <input id="tool-search" class="big-input" type="search" spellcheck="false" placeholder="Search tools, e.g. subdomain, satellite, telegram, free">
+        <div class="filter-row">
+          <label class="toggle"><input type="checkbox" id="f-free"> Free</label>
+          <label class="toggle"><input type="checkbox" id="f-noacct"> No sign-up</label>
+          <label class="toggle"><input type="checkbox" id="f-oss"> Open source</label>
+          <label class="select">
+            <span class="sr-only">Tool type</span>
+            <select id="f-type">
+              <option value="">All types</option>
+              <option value="web">Web</option>
+              <option value="cli">Command line</option>
+              <option value="extension">Browser extension</option>
+              <option value="app">App / self-hosted</option>
+              <option value="api">API</option>
+              <option value="dataset">Dataset</option>
+              <option value="guide">Guide</option>
+            </select>
+          </label>
+          <button type="button" class="ghost" id="f-reset">Reset</button>
+        </div>
+        <div class="chips" id="category-chips" aria-label="Categories"></div>
+      </div>
+      <p class="result-count" id="result-count" aria-live="polite"></p>
+      <div id="tool-list"></div>
+    </section>
+
+    <section id="view-about" class="view prose" role="tabpanel" aria-labelledby="tab-about" hidden>
+      <h2>What this is</h2>
+      <p>OSINT Atlas is a hand-picked catalogue of open-source intelligence tools and a pivot board. Paste a selector (a username, email, domain, IP, phone number, URL, image URL, crypto wallet, file hash or a name), and the pivot board builds the lookup links an investigator would open next, grouped by purpose.</p>
+      <h2>Passive by design</h2>
+      <ul>
+        <li>The page loads only its own files. No analytics, cookies, fonts or trackers, and a strict Content-Security-Policy keeps it that way.</li>
+        <li>Selectors are never written to the address bar, history or storage. Links open with <code>noreferrer</code>, so services do not learn where you came from.</li>
+        <li>No scraping and no API keys. The page builds links; you decide what to open.</li>
+        <li>Opening a link sends your query to that service. For sensitive cases, use a separate browser profile, a VPN or Tor, and research accounts.</li>
+      </ul>
+      <h2>Use it responsibly</h2>
+      <p>Public does not mean fair game. Have a lawful purpose, collect only what you need, and respect privacy law such as the GDPR. Some listed services are aimed at specific countries or professions and have their own terms.</p>
+      <h2>Contribute</h2>
+      <p>Every tool lives in <code>data/tools.json</code> and every pivot in <code>data/pivots.json</code>. A script checks the format, and CI runs it on every pull request. See the <a href="https://github.com/skriptkiddy98x/osint-atlas" target="_blank" rel="noopener noreferrer">repository</a> to suggest a tool or fix a link.</p>
+      <h2>Credits</h2>
+      <p>Inspired by <a href="https://github.com/jivoi/awesome-osint" target="_blank" rel="noopener noreferrer">awesome-osint</a>, the community list that covers far more ground than this one. OSINT Atlas is an independent selection; every description here was written from scratch.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>No tracking. No cookies. Selectors stay in this tab.</span>
+      <span><a href="https://github.com/skriptkiddy98x/osint-atlas" target="_blank" rel="noopener noreferrer">Source on GitHub</a> · MIT licence</span>
+    </div>
+  </footer>
+</body>
+</html>

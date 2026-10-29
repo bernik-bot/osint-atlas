@@ -1,0 +1,17 @@
+name: Broken link or wrong pivot
+description: A tool is gone, moved, or a pivot link no longer works
+labels: ["broken link"]
+body:
+  - type: input
+    id: what
+    attributes:
+      label: Tool or pivot name
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: What happens?
+      description: Use a harmless test selector such as example.com, not a real person's data.
+    validations:
+      required: true

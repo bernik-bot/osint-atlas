@@ -1,0 +1,50 @@
+name: Suggest a tool
+description: Propose a tool or resource for the catalogue
+labels: ["new tool"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Name
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      placeholder: https://
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Search engines
+        - Usernames
+        - Email
+        - Phone numbers
+        - People & records
+        - Social media
+        - Domains & DNS
+        - IPs & infrastructure
+        - Web archives
+        - Images & video
+        - Maps & geolocation
+        - Ships, planes & vehicles
+        - Companies & sanctions
+        - Crypto
+        - Breaches & leaks
+        - Threat intel & malware
+        - Code & documents
+        - Toolkits & OPSEC
+        - Learn & practise
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What is it good for?
+      description: One or two sentences in your own words. Free, paid or freemium? Does it need an account?
+    validations:
+      required: true
