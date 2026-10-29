@@ -514,6 +514,7 @@
     { "name": "ID Ransomware", "url": "https://id-ransomware.malwarehunterteam.com", "category": "threat", "description": "Identifies ransomware from a note or encrypted sample.", "pricing": "free", "type": "web", "account": false, "openSource": false },
     { "name": "No More Ransom", "url": "https://www.nomoreransom.org", "category": "threat", "description": "Free decryptors from Europol, police and security firms.", "pricing": "free", "type": "web", "account": false, "openSource": false, "region": "EU" },
     { "name": "Check Point Threat Map", "url": "https://threatmap.checkpoint.com", "category": "threat", "description": "Live map of attacks seen by Check Point.", "pricing": "free", "type": "web", "account": false, "openSource": false },
+    { "name": "ICHI Internet Cyber Health Index", "url": "https://ichi.global", "category": "threat", "description": "Free daily barometer of internet-wide cyber health: aggregates threat telemetry and news into a single directional index.", "pricing": "free", "type": "web", "account": false, "openSource": false },
 
     { "name": "Google News", "url": "https://news.google.com", "category": "news", "description": "News search and topic pages from thousands of outlets.", "pricing": "free", "type": "web", "account": false, "openSource": false },
     { "name": "GDELT", "url": "https://www.gdeltproject.org", "category": "news", "description": "Monitors world news in 100+ languages; events, themes and tone as open data.", "pricing": "free", "type": "dataset", "account": false, "openSource": false },
